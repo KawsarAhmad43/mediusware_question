@@ -7,6 +7,7 @@ use App\Models\ProductVariant;
 use App\Models\ProductVariantPrice;
 use App\Models\Variant;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class ProductController extends Controller
 {
@@ -17,7 +18,10 @@ class ProductController extends Controller
      */
     public function index()
     {
-        return view('products.index');
+
+        $products= Product::with('price')->paginate(2);
+        return view('products.index', compact('products'));
+        
     }
 
     /**
@@ -37,9 +41,53 @@ class ProductController extends Controller
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\JsonResponse
      */
+   
+
+
+
+
     public function store(Request $request)
     {
+        Log::alert($request);
+        $product = new Product([
+            
+            'id' => $request->input('id'),
+            'title' => $request->input('title'),
+            'sku' => $request->input('sku'),
+            'description' => $request->input('description')
+        ]);
+        
+        $product->save();
 
+
+
+
+      $variant=  $request-> input('product_variant');
+      Log::alert($variant);
+    //   to save sub childes of 
+      for($i=0;$i<count($variant);$i++){
+        // product variant id
+
+       Log::alert($variant[$i]);
+           for($j=0;$j<count($variant[$i]['tags']);$j++){
+                  $variant[$i]['tags'];
+
+                  Log::alert($variant[$i]['tags'][$j]);
+
+                  $data=new ProductVariant([
+                    'variant'=>$variant[$i]['tags'][$j],
+                    'variant_id'=>$variant[$i]['option'],
+                    'product_id'=>$product->id,
+                    ]);
+
+                    $data->save();
+
+             }
+     
+      }
+
+        
+        return response()->json('Product created!');
     }
 
 
